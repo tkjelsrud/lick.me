@@ -46,7 +46,7 @@
     const dateKey = getLocalDateKey();
 
     try {
-      const response = await fetch('data/licks.json', { cache: 'no-store' });
+      const response = await fetch('data/licks.json');
       if (!response.ok) {
         throw new Error(`Failed to load licks: ${response.status}`);
       }
@@ -60,7 +60,7 @@
     } catch (error) {
       titleEl.textContent = 'Unable to load today’s lick';
       infoEl.textContent = '';
-      showError('Could not load /data/licks.json. Try running a static server: python3 -m http.server 8000');
+      showError('Could not load data/licks.json. Try running a static server: python3 -m http.server 8000');
       console.error(error);
     }
   };
