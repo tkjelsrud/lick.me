@@ -85,47 +85,40 @@
   };
 
   const getTempoFeel = (bpm) => {
-    if (bpm < 50) {
-      return 'grave';
-    }
-
     if (bpm < 60) {
-      return 'largo';
+      return { label: 'very slow', italian: 'Largo' };
     }
 
-    if (bpm < 72) {
-      return 'adagio';
+    if (bpm < 76) {
+      return { label: 'slow', italian: 'Adagio' };
     }
 
-    if (bpm < 84) {
-      return 'andante';
+    if (bpm < 108) {
+      return { label: 'medium', italian: 'Andante' };
     }
 
-    if (bpm < 98) {
-      return 'moderato';
-    }
-
-    if (bpm < 116) {
-      return 'allegretto';
-    }
-
-    if (bpm < 140) {
-      return 'allegro';
+    if (bpm < 120) {
+      return { label: 'upbeat', italian: 'Moderato' };
     }
 
     if (bpm < 168) {
-      return 'vivace';
+      return { label: 'fast', italian: 'Allegro' };
     }
 
     if (bpm < 200) {
-      return 'presto';
+      return { label: 'very fast', italian: 'Presto' };
     }
 
-    return 'prestissimo';
+    return { label: 'extremely fast', italian: 'Prestissimo' };
   };
 
-  const updateTapTempoOutput = (text) => {
+  const updateTapTempoOutput = (text, useHtml = false) => {
     if (tapTempoOutputEl) {
+      if (useHtml) {
+        tapTempoOutputEl.innerHTML = text;
+        return;
+      }
+
       tapTempoOutputEl.textContent = text;
     }
   };
@@ -160,7 +153,8 @@
 
     const averageInterval = intervals.reduce((sum, interval) => sum + interval, 0) / intervals.length;
     const bpm = Math.round(60000 / averageInterval);
-    updateTapTempoOutput(`${bpm} BPM · ${getTempoFeel(bpm)}`);
+    const tempoFeel = getTempoFeel(bpm);
+    updateTapTempoOutput(`${bpm} BPM - ${tempoFeel.label} (<em>${tempoFeel.italian}</em>)`, true);
   };
 
   const createSyllableButton = ({ syllable, semitones }) => {
