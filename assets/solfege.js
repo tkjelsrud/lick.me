@@ -1,9 +1,14 @@
 (() => {
   const statusEl = document.getElementById('solfege-status');
   const guidesEl = document.getElementById('solfege-guides');
+  const transposeDownEl = document.getElementById('transpose-down');
+  const transposeUpEl = document.getElementById('transpose-up');
+  const transposeValueEl = document.getElementById('transpose-value');
 
   const ROOT_MIDI = 60;
   const NOTE_NAMES = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
+  let transpose = 0;
+  const syllableButtons = [];
 
   const guides = [
     {
@@ -70,31 +75,46 @@
   ];
 
   const getPitchLabel = (midi) => {
-    const note = NOTE_NAMES[midi % 12];
+    const note = NOTE_NAMES[((midi % 12) + 12) % 12];
     const octave = Math.floor(midi / 12) - 1;
     return `${note}${octave}`;
   };
 
   const createSyllableButton = ({ syllable, semitones }) => {
     const button = document.createElement('button');
-    const midi = ROOT_MIDI + semitones;
+    const label = document.createElement('span');
+    const pitchLabel = document.createElement('span');
 
     button.className = 'syllable-button';
     button.type = 'button';
-    button.innerHTML = `${syllable}<span class="pitch-label">${getPitchLabel(midi)}</span>`;
-    button.setAttribute('aria-label', `${syllable}, ${getPitchLabel(midi)}`);
+    label.textContent = syllable;
+    pitchLabel.className = 'pitch-label';
+    button.append(label, pitchLabel);
+
+    const updatePitch = () => {
+      const midi = ROOT_MIDI + semitones + transpose;
+      const pitch = getPitchLabel(midi);
+      pitchLabel.textContent = pitch;
+      button.setAttribute('aria-label', `${syllable}, ${pitch}`);
+    };
+
+    updatePitch();
 
     button.addEventListener('click', async () => {
+      const midi = ROOT_MIDI + semitones + transpose;
+      const pitch = getPitchLabel(midi);
+
       try {
         window.LickAudio.stopAll();
         await window.LickAudio.playChord([midi], { duration: 0.55, volume: 0.14 });
-        statusEl.textContent = `Played ${syllable} (${getPitchLabel(midi)}).`;
+        statusEl.textContent = `Played ${syllable} (${pitch}).`;
       } catch (error) {
         statusEl.textContent = 'Playback could not start in this browser.';
         console.error(error);
       }
     });
 
+    syllableButtons.push(updatePitch);
     return button;
   };
 
@@ -134,4 +154,30 @@
 
     guidesEl.append(card);
   });
+
+  const updateTransposeUi = () => {
+    if (transposeValueEl) {
+      transposeValueEl.textContent = transpose > 0 ? `+${transpose}` : `${transpose}`;
+    }
+
+    syllableButtons.forEach((updatePitch) => updatePitch());
+  };
+
+  if (transposeDownEl && transposeUpEl) {
+    transposeDownEl.addEventListener('click', (event) => {
+      event.preventDefault();
+      transpose -= 1;
+      updateTransposeUi();
+      statusEl.textContent = `Transpose set to ${transpose > 0 ? `+${transpose}` : transpose}.`;
+    });
+
+    transposeUpEl.addEventListener('click', (event) => {
+      event.preventDefault();
+      transpose += 1;
+      updateTransposeUi();
+      statusEl.textContent = `Transpose set to ${transpose > 0 ? `+${transpose}` : transpose}.`;
+    });
+  }
+
+  updateTransposeUi();
 })();

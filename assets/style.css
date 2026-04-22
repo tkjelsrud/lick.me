@@ -70,6 +70,30 @@ h1 {
   margin: 0.25rem 0;
 }
 
+.inline-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.inline-link:hover,
+.inline-link:focus-visible {
+  text-decoration: underline;
+}
+
+.transpose-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.transpose-value {
+  min-width: 2.5rem;
+  color: var(--text);
+  font-weight: 600;
+}
+
 .controls {
   display: flex;
   align-items: center;
@@ -193,5 +217,9 @@ h1 {
 
   .top-nav {
     justify-content: flex-start;
+  }
+
+  .transpose-controls {
+    gap: 0.4rem;
   }
 }
