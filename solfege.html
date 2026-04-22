@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>lick.me — Solfege Guides</title>
+    <link rel="stylesheet" href="assets/style.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="page-header">
+        <a class="back-link" href="index.html">← Back to lick.me</a>
+        <h1>Solfege guides</h1>
+        <p class="subtitle">Clickable syllables for hearing and remembering common scale shapes.</p>
+      </header>
+
+      <section class="card">
+        <p class="meta">Tap any syllable to hear a short sine-wave tone. These are centered around a comfortable middle register for quick ear training.</p>
+        <p id="solfege-status" class="meta playback-status">Ready to play syllables.</p>
+      </section>
+
+      <section id="solfege-guides" class="guide-list" aria-label="Solfege guide list"></section>
+    </main>
+
+    <script src="assets/audio.js"></script>
+    <script src="assets/solfege.js"></script>
+  </body>
+</html>

@@ -27,6 +27,24 @@ body {
   width: min(100%, 840px);
 }
 
+.top-nav {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.75rem;
+}
+
+.nav-link,
+.back-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.nav-link:hover,
+.back-link:hover {
+  text-decoration: underline;
+}
+
 h1 {
   margin: 0;
   font-size: clamp(2rem, 5vw, 3rem);
@@ -101,4 +119,79 @@ h1 {
 .error {
   margin-top: 0.5rem;
   color: var(--error);
+}
+
+.page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.guide-list {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.guide-card {
+  padding: 1rem;
+  border-radius: 14px;
+  background: #111722;
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
+}
+
+.guide-card h2,
+.guide-card h3 {
+  margin: 0;
+}
+
+.guide-card p {
+  margin: 0.5rem 0 0;
+}
+
+.syllable-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+
+.syllable-button {
+  min-width: 3.25rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--card));
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.syllable-button:hover,
+.syllable-button:focus-visible {
+  background: color-mix(in srgb, var(--accent) 18%, var(--card));
+}
+
+.syllable-button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 65%, white);
+  outline-offset: 2px;
+}
+
+.pitch-label {
+  display: block;
+  margin-top: 0.15rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+@media (max-width: 640px) {
+  body {
+    place-items: start center;
+  }
+
+  .top-nav {
+    justify-content: flex-start;
+  }
 }

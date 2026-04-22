@@ -16,12 +16,9 @@
     E: 40,
   };
 
-  const RELEASE_SECONDS = 0.08;
   const MIN_NOTE_SECONDS = 0.12;
 
-  let audioContext;
   let stopPlaybackTimeout = 0;
-  let activeNodes = [];
   let currentPlayback = [];
   let playbackAvailable = false;
   let isPlaying = false;
@@ -61,48 +58,10 @@
     playbackButtonEl.textContent = isPlaying ? 'Stop' : 'Play';
   };
 
-  const midiToFrequency = (midi) => 440 * 2 ** ((midi - 69) / 12);
-
-  const getAudioContext = async () => {
-    if (!audioContext) {
-      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-      if (!AudioContextClass) {
-        throw new Error('Web Audio is not supported in this browser.');
-      }
-
-      audioContext = new AudioContextClass();
-    }
-
-    if (audioContext.state === 'suspended') {
-      await audioContext.resume();
-    }
-
-    return audioContext;
-  };
-
-  const releaseNode = (entry) => {
-    entry.oscillator.disconnect();
-    entry.gainNode.disconnect();
-    activeNodes = activeNodes.filter((node) => node !== entry);
-  };
-
   const stopPlayback = () => {
     window.clearTimeout(stopPlaybackTimeout);
 
-    if (audioContext) {
-      const stopAt = audioContext.currentTime + 0.01;
-
-      activeNodes.forEach((entry) => {
-        try {
-          entry.gainNode.gain.cancelScheduledValues(stopAt);
-          entry.gainNode.gain.setValueAtTime(Math.max(entry.gainNode.gain.value, 0.0001), stopAt);
-          entry.gainNode.gain.exponentialRampToValueAtTime(0.0001, stopAt + RELEASE_SECONDS);
-          entry.oscillator.stop(stopAt + RELEASE_SECONDS);
-        } catch (error) {
-          releaseNode(entry);
-        }
-      });
-    }
+    window.LickAudio.stopAll();
 
     isPlaying = false;
     syncPlaybackButton();
@@ -176,7 +135,7 @@
 
     stopPlayback();
 
-    const context = await getAudioContext();
+    const context = await window.LickAudio.getAudioContext();
     const startTime = context.currentTime + 0.05;
 
     currentPlayback.forEach((event) => {
@@ -187,12 +146,12 @@
         const gainNode = context.createGain();
         const noteStart = startTime + event.time;
         const attackEnd = noteStart + 0.01;
-        const releaseStart = Math.max(noteStart + event.duration - RELEASE_SECONDS, attackEnd + 0.01);
-        const stopAt = releaseStart + RELEASE_SECONDS;
+        const releaseStart = Math.max(noteStart + event.duration - window.LickAudio.RELEASE_SECONDS, attackEnd + 0.01);
+        const stopAt = releaseStart + window.LickAudio.RELEASE_SECONDS;
         const entry = { oscillator, gainNode };
 
         oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(midiToFrequency(midi), noteStart);
+        oscillator.frequency.setValueAtTime(window.LickAudio.midiToFrequency(midi), noteStart);
 
         gainNode.gain.setValueAtTime(0.0001, noteStart);
         gainNode.gain.linearRampToValueAtTime(voiceLevel, attackEnd);
@@ -203,8 +162,7 @@
         gainNode.connect(context.destination);
         oscillator.start(noteStart);
         oscillator.stop(stopAt);
-        oscillator.onended = () => releaseNode(entry);
-        activeNodes.push(entry);
+        window.LickAudio.registerNode(entry);
       });
     });
 
@@ -213,7 +171,7 @@
     syncPlaybackButton();
 
     const lastEvent = currentPlayback[currentPlayback.length - 1];
-    const totalDuration = lastEvent.time + lastEvent.duration + RELEASE_SECONDS + 0.1;
+    const totalDuration = lastEvent.time + lastEvent.duration + window.LickAudio.RELEASE_SECONDS + 0.1;
     stopPlaybackTimeout = window.setTimeout(() => {
       isPlaying = false;
       playbackStatusEl.textContent = 'Simple sine preview of the tab melody.';
