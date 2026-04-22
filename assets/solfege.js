@@ -4,11 +4,15 @@
   const transposeDownEl = document.getElementById('transpose-down');
   const transposeUpEl = document.getElementById('transpose-up');
   const transposeValueEl = document.getElementById('transpose-value');
+  const tapTempoButtonEl = document.getElementById('tap-tempo-button');
+  const tapTempoOutputEl = document.getElementById('tap-tempo-output');
 
   const ROOT_MIDI = 60;
   const NOTE_NAMES = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
+  const TAP_RESET_MS = 2200;
   let transpose = 0;
   const syllableButtons = [];
+  let tapTimes = [];
 
   const guides = [
     {
@@ -78,6 +82,85 @@
     const note = NOTE_NAMES[((midi % 12) + 12) % 12];
     const octave = Math.floor(midi / 12) - 1;
     return `${note}${octave}`;
+  };
+
+  const getTempoFeel = (bpm) => {
+    if (bpm < 50) {
+      return 'grave';
+    }
+
+    if (bpm < 60) {
+      return 'largo';
+    }
+
+    if (bpm < 72) {
+      return 'adagio';
+    }
+
+    if (bpm < 84) {
+      return 'andante';
+    }
+
+    if (bpm < 98) {
+      return 'moderato';
+    }
+
+    if (bpm < 116) {
+      return 'allegretto';
+    }
+
+    if (bpm < 140) {
+      return 'allegro';
+    }
+
+    if (bpm < 168) {
+      return 'vivace';
+    }
+
+    if (bpm < 200) {
+      return 'presto';
+    }
+
+    return 'prestissimo';
+  };
+
+  const updateTapTempoOutput = (text) => {
+    if (tapTempoOutputEl) {
+      tapTempoOutputEl.textContent = text;
+    }
+  };
+
+  const registerTapTempo = () => {
+    const now = Date.now();
+
+    if (tapTimes.length > 0 && now - tapTimes[tapTimes.length - 1] > TAP_RESET_MS) {
+      tapTimes = [];
+    }
+
+    tapTimes.push(now);
+
+    if (tapTimes.length === 1) {
+      updateTapTempoOutput('Keep tapping steadily to detect a tempo.');
+      return;
+    }
+
+    if (tapTimes.length === 2) {
+      updateTapTempoOutput('One more tap will lock a tempo feel.');
+      return;
+    }
+
+    if (tapTimes.length > 4) {
+      tapTimes.shift();
+    }
+
+    const intervals = [];
+    for (let index = 1; index < tapTimes.length; index += 1) {
+      intervals.push(tapTimes[index] - tapTimes[index - 1]);
+    }
+
+    const averageInterval = intervals.reduce((sum, interval) => sum + interval, 0) / intervals.length;
+    const bpm = Math.round(60000 / averageInterval);
+    updateTapTempoOutput(`${bpm} BPM · ${getTempoFeel(bpm)}`);
   };
 
   const createSyllableButton = ({ syllable, semitones }) => {
@@ -177,6 +260,10 @@
       updateTransposeUi();
       statusEl.textContent = `Transpose set to ${transpose > 0 ? `+${transpose}` : transpose}.`;
     });
+  }
+
+  if (tapTempoButtonEl) {
+    tapTempoButtonEl.addEventListener('click', registerTapTempo);
   }
 
   updateTransposeUi();
